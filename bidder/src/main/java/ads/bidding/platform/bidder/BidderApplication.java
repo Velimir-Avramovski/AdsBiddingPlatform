@@ -1,3 +1,6 @@
+/*
+  Copyrights to Velimir Avramovski, July 2022.
+ */
 package ads.bidding.platform.bidder;
 
 import org.springframework.boot.SpringApplication;
@@ -6,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class BidderApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(BidderApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(BidderApplication.class, args);
+  }
 
 }

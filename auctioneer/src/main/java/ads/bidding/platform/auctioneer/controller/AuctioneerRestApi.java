@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("v1")
 public class AuctioneerRestApi {
 
-  Logger logger = LoggerFactory.getLogger(AuctioneerRestApi.class);
+  private final Logger logger = LoggerFactory.getLogger(AuctioneerRestApi.class);
 
   /**
    * ToDo

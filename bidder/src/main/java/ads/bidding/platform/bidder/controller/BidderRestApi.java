@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("v1")
 public class BidderRestApi {
 
-  Logger logger = LoggerFactory.getLogger(BidderRestApi.class);
+  private final Logger logger = LoggerFactory.getLogger(BidderRestApi.class);
 
   /**
    * ToDo

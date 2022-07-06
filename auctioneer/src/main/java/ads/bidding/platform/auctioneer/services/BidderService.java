@@ -5,15 +5,15 @@ package ads.bidding.platform.auctioneer.services;
 
 import ads.bidding.platform.auctioneer.models.AdBid;
 import ads.bidding.platform.auctioneer.models.AdBidResponse;
-import ads.bidding.platform.auctioneer.utils.CommonUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -22,58 +22,68 @@ import org.springframework.web.client.RestTemplate;
  * ToDo
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BidderService implements Bidder {
 
   private final Logger logger = LoggerFactory.getLogger(BidderService.class);
 
-  @Autowired
-  private final CommonUtils commonUtils;
+  @Value("#{'${bidders}'.split('\\s*,\\s*')}")
+  private List<String> biddersList;
+
+  private final RestTemplate bidderRestTemplate;
 
   @Override
-  public AdBidResponse bidForAnAd(String id, String[] attributes) {
+  public AdBidResponse bidForAnAd(String id, Map<String, String> attributes) throws IllegalStateException {
+    final AdBid adBid = new AdBid(id, attributes);
     final ArrayList<AdBidResponse> adBids = new ArrayList<>();
-    try {
-      commonUtils.getAvailableBidders().forEach(bidderClient -> {
-        final String bidderUrl = bidderClient.trim();
-        logger.debug("Sending bid to bidder service={}", bidderUrl);
-        final AdBid adBid = buildAdBid(id, attributes);
-        logger.debug("Sending adBid={}", adBid);
-        final AdBidResponse adBidResponse = sendBidRequest(bidderUrl, adBid);
+
+    getAvailableBidders().forEach(bidderClientUrl -> {
+      logger.debug("Sending bid to bidder service={} and adBid={}", bidderClientUrl, adBid);
+      AdBidResponse adBidResponse = null;
+      try {
+        adBidResponse = sendBidRequest(bidderClientUrl, adBid);
+      } catch (Exception e) {
+        logger.error("Something went wrong when biding for at service={}", bidderClientUrl, e);
+      }
+      if (adBidResponse != null) {
         adBids.add(adBidResponse);
-      });
-    } catch (Exception e) {
-      logger.error("Something went wrong when biding for an ad!", e);
-    }
+      }
+    });
+
     return getHighestAdBidResponse(adBids);
   }
 
-  private AdBid buildAdBid(String id, String[] attributes) {
-    Map<String, String> attributesMap = new HashMap<>();
-    for (String attribute : attributes) {
-      final String[] keyValuePair = attribute.split("=");
-      attributesMap.put(keyValuePair[0], keyValuePair[1]);
-    }
-    return new AdBid(id, attributesMap);
-  }
-
   /**
-   * ToDo - handle errors!
+   * ToDo - handle errors, fail silently!
    *
    * @param urlToBidder
    * @param adBid
    * @return
    */
   private AdBidResponse sendBidRequest(final String urlToBidder, final AdBid adBid) {
-    RestTemplate restTemplate = new RestTemplate();
-    HttpEntity<AdBid> requestBody = new HttpEntity<>(adBid);
-    AdBidResponse adBidResponse = restTemplate.postForEntity(urlToBidder, requestBody, AdBidResponse.class).getBody();
+    AdBidResponse adBidResponse = bidderRestTemplate.postForEntity(urlToBidder, new HttpEntity<>(adBid), AdBidResponse.class).getBody();
     logger.debug("adBidResponse={}", adBidResponse);
     return adBidResponse;
   }
 
-  private AdBidResponse getHighestAdBidResponse(final ArrayList<AdBidResponse> adBids) {
-    return adBids.stream().max(Comparator.comparing(AdBidResponse::getBid)).orElse(null);
+  private AdBidResponse getHighestAdBidResponse(final ArrayList<AdBidResponse> adBids) throws IllegalStateException {
+    return adBids.stream().max(Comparator.comparing(AdBidResponse::getBid)).orElseThrow(() -> new IllegalStateException("No bid found!"));
+  }
+
+  /**
+   * ToDo
+   *
+   * @return
+   * @throws Exception
+   */
+  public List<String> getAvailableBidders() {
+    if (biddersList == null || biddersList.isEmpty()) {
+      logger.debug("Configuration for bidders service is not available!");
+      return Collections.emptyList();
+    } else {
+      logger.debug("bidderClients={}", biddersList);
+      return biddersList;
+    }
   }
 
 }

@@ -17,7 +17,7 @@ public class AdBidResponse {
 
   private String id;
 
-  private String bid;
+  private Long bid;
 
   private String content;
 

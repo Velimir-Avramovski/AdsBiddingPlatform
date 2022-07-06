@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="AdsBiddingPlatform:auctioneer [clean build bootRun]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
+  <configuration default="false" name="AdsBiddingPlatform:auctioneer [bootRun]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$/auctioneer" />
@@ -10,8 +10,6 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="clean" />
-          <option value="build" />
           <option value="bootRun" />
         </list>
       </option>

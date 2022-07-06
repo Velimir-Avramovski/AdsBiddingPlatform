@@ -3,12 +3,16 @@
  */
 package ads.bidding.platform.auctioneer.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * ToDo
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AdBidResponse {
 
   private String id;
@@ -16,5 +20,10 @@ public class AdBidResponse {
   private String bid;
 
   private String content;
+
+  @Override
+  public String toString() {
+    return content.split(":")[0] + ":" + bid;
+  }
 
 }

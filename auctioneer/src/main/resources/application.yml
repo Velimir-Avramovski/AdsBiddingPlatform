@@ -1,7 +1,9 @@
 server:
   port: 8080
 
-logging.level.org.springframework.web: DEBUG
-logging.level.org.hibernate: ERROR
+logging:
+  level:
+    root: DEBUG
 
+# ToDo - these needs to be taken as input params ot the application!
 bidders: "http://localhost:8081, http://localhost:8082, http://localhost:8083"

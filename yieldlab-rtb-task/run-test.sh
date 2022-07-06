@@ -12,7 +12,7 @@ curl -s "http://localhost:8080/8?c=2&b=4"; echo
 curl -s "http://localhost:8080/9?a=5"; echo
 curl -s "http://localhost:8080/10?a=1&b=0"; echo
 curl -s "http://localhost:8080/11?a=1&c=2"; echo
-) >result
+) > result
 
 diff -u result expected.result
 

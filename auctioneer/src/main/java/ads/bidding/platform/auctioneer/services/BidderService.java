@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class BidderService implements Bidder {
       }
     });
 
-    return getHighestAdBidResponse(adBids);
+    return getHighestAdBidResponse(adBids).orElseThrow(() -> new IllegalStateException("No ad bid found!"));
   }
 
   /**
@@ -66,8 +67,8 @@ public class BidderService implements Bidder {
     return adBidResponse;
   }
 
-  private AdBidResponse getHighestAdBidResponse(final ArrayList<AdBidResponse> adBids) throws IllegalStateException {
-    return adBids.stream().max(Comparator.comparing(AdBidResponse::getBid)).orElseThrow(() -> new IllegalStateException("No bid found!"));
+  private Optional<AdBidResponse> getHighestAdBidResponse(final ArrayList<AdBidResponse> adBids) {
+    return adBids.stream().max(Comparator.comparing(AdBidResponse::getBid));
   }
 
   /**

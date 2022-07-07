@@ -4,3 +4,7 @@ server:
 logging:
   level:
     root: DEBUG
+
+app:
+  user: velimir
+  password: "123321"

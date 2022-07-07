@@ -1,3 +1,6 @@
+/*
+  Copyrights to Velimir Avramovski, July 2022.
+ */
 package ads.bidding.platform.auctioneer.exceptions;
 
 import org.slf4j.Logger;

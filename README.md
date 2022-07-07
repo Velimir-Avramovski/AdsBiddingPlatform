@@ -8,7 +8,7 @@ How to run:
 - run auctionner application on local env (port 8080)
 
 Testing:
-- once bidders and auctioneer services are running, run yieldlab-rtb-task\run-test.sh and validate results
+- once bidders and auctioneer services are running, run yieldlab-rtb-task\run-test.sh and validate results. Note that this script has been modified to accommodate the implementation.
 
 Simple archirectural overview of the system at: resources\ad-bidding-basic-architecture.drawio.png
 

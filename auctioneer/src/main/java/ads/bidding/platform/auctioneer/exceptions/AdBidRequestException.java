@@ -15,4 +15,9 @@ public class AdBidRequestException extends Exception {
     logger.error("AdBidRequestException! message={} errorCode={}", message, errorCode);
   }
 
+  public AdBidRequestException(final String message, final ErrorCode errorCode) {
+    super(message);
+    logger.error("AdBidRequestException! message={} errorCode={}", message, errorCode);
+  }
+
 }

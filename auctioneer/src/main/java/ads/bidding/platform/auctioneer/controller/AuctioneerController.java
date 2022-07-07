@@ -3,6 +3,7 @@
  */
 package ads.bidding.platform.auctioneer.controller;
 
+import ads.bidding.platform.auctioneer.exceptions.AdBidRequestException;
 import ads.bidding.platform.auctioneer.exceptions.EmptyAdBidsExceptions;
 import ads.bidding.platform.auctioneer.models.AdBidResponse;
 import ads.bidding.platform.auctioneer.services.BidderService;
@@ -35,7 +36,8 @@ public class AuctioneerController {
    * ToDo
    */
   @GetMapping(path = "/ad/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
-  ResponseEntity<String> getAd(@PathVariable String id, @RequestParam Map<String, String> attributes) throws EmptyAdBidsExceptions {
+  ResponseEntity<String> getAd(@PathVariable String id, @RequestParam Map<String, String> attributes)
+      throws EmptyAdBidsExceptions, AdBidRequestException {
     logger.debug("Received getAd request with id={} and attributes={}", id, attributes);
     final AdBidResponse adBidResponse = bidderService.bidForAnAd(id, attributes);
     return new ResponseEntity<>(adBidResponse.toString(), HttpStatus.OK);

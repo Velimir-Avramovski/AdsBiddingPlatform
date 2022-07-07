@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,26 +46,36 @@ public class BidderService implements Bidder {
    * @throws IllegalStateException
    */
   @Override
-  public AdBidResponse bidForAnAd(String id, Map<String, String> attributes) throws EmptyAdBidsExceptions {
+  public AdBidResponse bidForAnAd(String id, Map<String, String> attributes) throws EmptyAdBidsExceptions, AdBidRequestException {
     final ArrayList<AdBidResponse> adBids = new ArrayList<>();
     final AdBid adBidRequest = new AdBid(id, attributes);
 
-    getAvailableBidders().forEach(bidderClientUrl -> {
+    final List<String> bidderServicesUrl = getAvailableBidders();
+    AtomicInteger bidderServiceRequestFailed = new AtomicInteger();
+
+    bidderServicesUrl.forEach(bidderClientUrl -> {
       logger.debug("Sending bid to bidder service={} and adBid={}", bidderClientUrl, adBidRequest);
       AdBidResponse adBidResponse = null;
-      // We want to continue getting ads even if one bid request fails!
+      // We want to continue getting ad bids even if one bid request fails!
       try {
         adBidResponse = sendBidRequest(bidderClientUrl, adBidRequest);
       } catch (AdBidRequestException e) {
+        bidderServiceRequestFailed.getAndIncrement();
         logger.error("Something went wrong when biding for at service={}", bidderClientUrl, e);
       }
+      // If the bidder response is valid, add it to the candidate list.
       if (adBidResponse != null) {
         adBids.add(adBidResponse);
       }
     });
 
+    // Check if all request actually failed to the bidders, if so throw proper exception.
+    if (bidderServiceRequestFailed.get() == bidderServicesUrl.size()) {
+      throw new AdBidRequestException("All requests to bidder services failed!", ErrorCode.EMPTY_AD_BIDS);
+    }
+
     return getHighestAdBidResponse(adBids)
-        .orElseThrow(() -> new EmptyAdBidsExceptions("No valid ad bids found!", ErrorCode.AD_BID_REQUEST_FAILED));
+        .orElseThrow(() -> new EmptyAdBidsExceptions("No valid ad bids found!", ErrorCode.EMPTY_AD_BIDS));
   }
 
   /**

@@ -3,6 +3,9 @@
  */
 package ads.bidding.platform.auctioneer.services;
 
+import ads.bidding.platform.auctioneer.exceptions.AdBidRequestException;
+import ads.bidding.platform.auctioneer.exceptions.EmptyAdBidsExceptions;
+import ads.bidding.platform.auctioneer.exceptions.ErrorCode;
 import ads.bidding.platform.auctioneer.models.AdBid;
 import ads.bidding.platform.auctioneer.models.AdBidResponse;
 import java.util.ArrayList;
@@ -33,17 +36,26 @@ public class BidderService implements Bidder {
 
   private final RestTemplate bidderRestTemplate;
 
+  /**
+   * ToDo
+   *
+   * @param id
+   * @param attributes
+   * @return
+   * @throws IllegalStateException
+   */
   @Override
-  public AdBidResponse bidForAnAd(String id, Map<String, String> attributes) throws IllegalStateException {
-    final AdBid adBid = new AdBid(id, attributes);
+  public AdBidResponse bidForAnAd(String id, Map<String, String> attributes) throws EmptyAdBidsExceptions {
     final ArrayList<AdBidResponse> adBids = new ArrayList<>();
+    final AdBid adBidRequest = new AdBid(id, attributes);
 
     getAvailableBidders().forEach(bidderClientUrl -> {
-      logger.debug("Sending bid to bidder service={} and adBid={}", bidderClientUrl, adBid);
+      logger.debug("Sending bid to bidder service={} and adBid={}", bidderClientUrl, adBidRequest);
       AdBidResponse adBidResponse = null;
+      // We want to continue getting ads even if one bid request fails!
       try {
-        adBidResponse = sendBidRequest(bidderClientUrl, adBid);
-      } catch (Exception e) {
+        adBidResponse = sendBidRequest(bidderClientUrl, adBidRequest);
+      } catch (AdBidRequestException e) {
         logger.error("Something went wrong when biding for at service={}", bidderClientUrl, e);
       }
       if (adBidResponse != null) {
@@ -51,18 +63,23 @@ public class BidderService implements Bidder {
       }
     });
 
-    return getHighestAdBidResponse(adBids).orElseThrow(() -> new IllegalStateException("No ad bid found!"));
+    return getHighestAdBidResponse(adBids)
+        .orElseThrow(() -> new EmptyAdBidsExceptions("No valid ad bids found!", ErrorCode.AD_BID_REQUEST_FAILED));
   }
 
   /**
-   * ToDo - handle errors, fail silently!
-   *
    * @param urlToBidder
    * @param adBid
    * @return
+   * @throws AdBidRequestException
    */
-  private AdBidResponse sendBidRequest(final String urlToBidder, final AdBid adBid) {
-    AdBidResponse adBidResponse = bidderRestTemplate.postForEntity(urlToBidder, new HttpEntity<>(adBid), AdBidResponse.class).getBody();
+  private AdBidResponse sendBidRequest(final String urlToBidder, final AdBid adBid) throws AdBidRequestException {
+    AdBidResponse adBidResponse;
+    try {
+      adBidResponse = bidderRestTemplate.postForEntity(urlToBidder, new HttpEntity<>(adBid), AdBidResponse.class).getBody();
+    } catch (Exception e) {
+      throw new AdBidRequestException("Bidding for an ad failed!", e, ErrorCode.AD_BID_REQUEST_FAILED);
+    }
     logger.debug("adBidResponse={}", adBidResponse);
     return adBidResponse;
   }

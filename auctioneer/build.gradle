@@ -13,6 +13,18 @@ configurations {
     }
 }
 
+// Set IT tests as source of the project!
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir "$projectDir/src/integrationTest/java"
+        }
+        resources.srcDir "$projectDir/src/integrationTest/resources"
+    }
+}
+
 repositories {
     mavenCentral()
 }

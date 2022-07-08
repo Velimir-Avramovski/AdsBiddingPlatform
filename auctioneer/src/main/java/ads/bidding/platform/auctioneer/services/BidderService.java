@@ -6,7 +6,7 @@ package ads.bidding.platform.auctioneer.services;
 import ads.bidding.platform.auctioneer.exceptions.AdBidRequestException;
 import ads.bidding.platform.auctioneer.exceptions.EmptyAdBidsExceptions;
 import ads.bidding.platform.auctioneer.exceptions.ErrorCode;
-import ads.bidding.platform.auctioneer.models.AdBid;
+import ads.bidding.platform.auctioneer.models.AdBidRequest;
 import ads.bidding.platform.auctioneer.models.AdBidResponse;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * ToDo
+ * Implementation that defines the behavior of a bidder service that should communicate with the actual bidders.
  */
 @Service
 @RequiredArgsConstructor
@@ -38,21 +38,44 @@ public class BidderService implements Bidder {
   private final RestTemplate bidderRestTemplate;
 
   /**
-   * ToDo
+   * Send bid requests to all bidder services.
    *
-   * @param id
-   * @param attributes
-   * @return
-   * @throws IllegalStateException
+   * @param id         id of the ad.
+   * @param attributes attributes.
+   * @return winner AdBidResponse response.
+   * @throws EmptyAdBidsExceptions this is thrown when no bids are returned from the bidder services.
+   * @throws AdBidRequestException this is thrown when requests to bidder services failed.
    */
   @Override
   public AdBidResponse bidForAnAd(String id, Map<String, String> attributes) throws EmptyAdBidsExceptions, AdBidRequestException {
-    final ArrayList<AdBidResponse> adBids = new ArrayList<>();
-    final AdBid adBidRequest = new AdBid(id, attributes);
-
     final List<String> bidderServicesUrl = getAvailableBidders();
-    AtomicInteger bidderServiceRequestFailed = new AtomicInteger();
+    final AtomicInteger bidderServiceRequestFailed = new AtomicInteger();
+    final AdBidRequest adBidRequest = new AdBidRequest(id, attributes);
 
+    // Get all bids for an ad.
+    final ArrayList<AdBidResponse> adBids = getAllBidsForAnAd(bidderServicesUrl, bidderServiceRequestFailed, adBidRequest);
+
+    // Check if all request actually failed to the bidders, if so throw proper exception.
+    if (bidderServiceRequestFailed.get() == bidderServicesUrl.size()) {
+      throw new AdBidRequestException("All requests to bidder services failed!", ErrorCode.EMPTY_AD_BIDS);
+    }
+
+    // Return the highest bid or throw an exception if no bid is found.
+    return getHighestAdBidResponse(adBids)
+        .orElseThrow(() -> new EmptyAdBidsExceptions("No valid ad bids found!", ErrorCode.EMPTY_AD_BIDS));
+  }
+
+  /**
+   * Sends all the bids to the bidder services and returns an list of those responses.
+   *
+   * @param bidderServicesUrl          list of bidder urls.
+   * @param bidderServiceRequestFailed counter of how much requests have failed.
+   * @param adBidRequest               ad bid request object model.
+   * @return ArrayList<AdBidResponse> list of ad bid responses.
+   */
+  private ArrayList<AdBidResponse> getAllBidsForAnAd(
+      final List<String> bidderServicesUrl, final AtomicInteger bidderServiceRequestFailed, final AdBidRequest adBidRequest) {
+    final ArrayList<AdBidResponse> adBids = new ArrayList<>();
     bidderServicesUrl.forEach(bidderClientUrl -> {
       logger.debug("Sending bid to bidder service={} and adBid={}", bidderClientUrl, adBidRequest);
       AdBidResponse adBidResponse = null;
@@ -68,26 +91,21 @@ public class BidderService implements Bidder {
         adBids.add(adBidResponse);
       }
     });
-
-    // Check if all request actually failed to the bidders, if so throw proper exception.
-    if (bidderServiceRequestFailed.get() == bidderServicesUrl.size()) {
-      throw new AdBidRequestException("All requests to bidder services failed!", ErrorCode.EMPTY_AD_BIDS);
-    }
-
-    return getHighestAdBidResponse(adBids)
-        .orElseThrow(() -> new EmptyAdBidsExceptions("No valid ad bids found!", ErrorCode.EMPTY_AD_BIDS));
+    return adBids;
   }
 
   /**
-   * @param urlToBidder
-   * @param adBid
-   * @return
-   * @throws AdBidRequestException
+   * Send HTTP request to particular bidder service. ToDo - This could probably be moved in an other class
+   *
+   * @param urlToBidder  url to bidder service.
+   * @param adBidRequest ad bid request.
+   * @return AdBidResponse ad bid response.
+   * @throws AdBidRequestException exception of the request fails for whatever reason.
    */
-  private AdBidResponse sendBidRequest(final String urlToBidder, final AdBid adBid) throws AdBidRequestException {
+  private AdBidResponse sendBidRequest(final String urlToBidder, final AdBidRequest adBidRequest) throws AdBidRequestException {
     AdBidResponse adBidResponse;
     try {
-      adBidResponse = bidderRestTemplate.postForEntity(urlToBidder, new HttpEntity<>(adBid), AdBidResponse.class).getBody();
+      adBidResponse = bidderRestTemplate.postForEntity(urlToBidder, new HttpEntity<>(adBidRequest), AdBidResponse.class).getBody();
     } catch (Exception e) {
       throw new AdBidRequestException("Bidding for an ad failed!", e, ErrorCode.AD_BID_REQUEST_FAILED);
     }
@@ -95,15 +113,20 @@ public class BidderService implements Bidder {
     return adBidResponse;
   }
 
+  /**
+   * Get the maximum bid of them all.
+   *
+   * @param adBids all ad bids.
+   * @return maximum ad bid (optional, might be null).
+   */
   private Optional<AdBidResponse> getHighestAdBidResponse(final ArrayList<AdBidResponse> adBids) {
     return adBids.stream().max(Comparator.comparing(AdBidResponse::getBid));
   }
 
   /**
-   * ToDo
+   * Gets the available bidder services url.
    *
-   * @return
-   * @throws Exception
+   * @return list of bidder services.
    */
   public List<String> getAvailableBidders() {
     if (biddersList == null || biddersList.isEmpty()) {

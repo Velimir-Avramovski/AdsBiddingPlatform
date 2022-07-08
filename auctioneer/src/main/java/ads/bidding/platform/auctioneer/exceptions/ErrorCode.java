@@ -4,7 +4,7 @@
 package ads.bidding.platform.auctioneer.exceptions;
 
 /**
- * ToDo
+ * Enum representing our custom error codes.
  */
 public enum ErrorCode {
 
@@ -13,7 +13,13 @@ public enum ErrorCode {
 
   private final int errorCode;
 
+  /**
+   * Enum constructor.
+   *
+   * @param errorCode error code as int.
+   */
   ErrorCode(int errorCode) {
     this.errorCode = errorCode;
   }
+
 }

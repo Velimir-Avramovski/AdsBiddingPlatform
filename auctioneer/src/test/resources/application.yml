@@ -1,0 +1,12 @@
+server:
+  port: 8080
+
+# For prod-env I would also introduce an app-prod profile which will filter out meaningless logs and raise log level to INFO.
+logging:
+  level:
+    root: DEBUG
+
+# In reality these could be propagated from some configuration (on the env the service is running) or fetched from some vault service.
+app:
+  user: velimir
+  password: "123321"

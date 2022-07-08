@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * ToDo
+ * Model of an ad bid response object. Example usage is as response payload from the bidder services.
  */
 @Data
 @AllArgsConstructor

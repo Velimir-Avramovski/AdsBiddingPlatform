@@ -9,12 +9,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * ToDo
+ * Model of an ad bid object. Example usage is as incoming request payload.
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdBid {
+public class AdBidRequest {
 
   private String id;
 

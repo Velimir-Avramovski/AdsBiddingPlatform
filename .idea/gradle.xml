@@ -13,7 +13,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/auctioneer" />
-            <option value="$PROJECT_DIR$/bidder" />
           </set>
         </option>
         <option name="useQualifiedModuleNames" value="true" />

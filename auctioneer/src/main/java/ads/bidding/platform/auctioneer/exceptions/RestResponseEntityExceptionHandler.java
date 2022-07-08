@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * ToDo
+ * This exception handler is responsible to catch and return customised response when an exceptions occurs in our service.
  */
 @RestControllerAdvice
 public class RestResponseEntityExceptionHandler {
 
+  /**
+   * Api error object that we gonna return.
+   */
   @Data
   @AllArgsConstructor
   private static class ApiError {
@@ -31,6 +34,13 @@ public class RestResponseEntityExceptionHandler {
 
   }
 
+  /**
+   * Catches and handles EmptyAdBidsExceptions.class exceptions.
+   *
+   * @param ex      exception.
+   * @param request incoming request.
+   * @return ResponseEntity<ApiError> with our custom ApiError.
+   */
   @ExceptionHandler(EmptyAdBidsExceptions.class)
   public ResponseEntity<ApiError> handleEmptyAdBidsExceptions(EmptyAdBidsExceptions ex, HttpServletRequest request) {
     ApiError apiError =
@@ -39,6 +49,13 @@ public class RestResponseEntityExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  /**
+   * Catches and handles AdBidRequestException.class exceptions.
+   *
+   * @param ex      exception.
+   * @param request incoming request.
+   * @return ResponseEntity<ApiError> with our custom ApiError.
+   */
   @ExceptionHandler(AdBidRequestException.class)
   public ResponseEntity<ApiError> handleAdBidRequestException(AdBidRequestException ex, HttpServletRequest request) {
     ApiError apiError =

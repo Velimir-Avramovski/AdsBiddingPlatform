@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * ToDo
+ * Rest controller that handles ad requests.
  */
 @RestController()
 @RequestMapping("/v1")
@@ -33,14 +33,21 @@ public class AuctioneerController {
   private final BidderService bidderService;
 
   /**
-   * ToDo
+   * This endpoint fetches an ad for a given id and attributes. Ad request is send to the bidder services and then the highest one is
+   * returned.
+   *
+   * @param id         - ad id.
+   * @param attributes - ad attributes.
+   * @return AdBidResponse object.
+   * @throws EmptyAdBidsExceptions this is thrown when no bids are returned from the bidder services.
+   * @throws AdBidRequestException this is thrown when requests to bidder services failed.
    */
   @GetMapping(path = "/ad/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
-  ResponseEntity<String> getAd(@PathVariable String id, @RequestParam Map<String, String> attributes)
+  ResponseEntity<AdBidResponse> getAd(@PathVariable String id, @RequestParam Map<String, String> attributes)
       throws EmptyAdBidsExceptions, AdBidRequestException {
     logger.debug("Received getAd request with id={} and attributes={}", id, attributes);
     final AdBidResponse adBidResponse = bidderService.bidForAnAd(id, attributes);
-    return new ResponseEntity<>(adBidResponse.toString(), HttpStatus.OK);
+    return new ResponseEntity<>(adBidResponse, HttpStatus.OK);
   }
 
 }

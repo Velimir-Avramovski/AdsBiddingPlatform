@@ -1,4 +1,3 @@
 rootProject.name = 'AdsBiddingPlatform'
 
 include 'auctioneer'
-include 'bidder'

@@ -6,7 +6,7 @@ Ads Bidding Platform - demo
 
 ### How to run:
 - Run yieldlab-rtb-task/test-setup.sh (this should start bidders services as docker containers)
-- Run auctionner application on local env (port 8080). Use Intellij run configuration: '.run\AdsBiddingPlatform_auctioneer [clean build bootRun].run.xml'.
+- Build (./gradlew clean build) & Run auctionner application on local env (port 8080). Use Intellij run configuration: '.run\AdsBiddingPlatform_auctioneer [clean build bootRun].run.xml'.
 
 ### Testing:
 - Once bidders and auctioneer services are running, run 'yieldlab-rtb-task\run-test.sh' and validate results. Note that this script has been modified to accommodate the implementation.

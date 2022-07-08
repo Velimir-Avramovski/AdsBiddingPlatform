@@ -33,7 +33,7 @@ public class BidderService implements Bidder {
   private final Logger logger = LoggerFactory.getLogger(BidderService.class);
 
   @Value("#{'${bidders}'.split('\\s*,\\s*')}")
-  private List<String> biddersList;
+  private final List<String> biddersList;
 
   private final RestTemplate bidderRestTemplate;
 

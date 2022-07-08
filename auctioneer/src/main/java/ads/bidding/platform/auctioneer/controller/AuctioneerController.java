@@ -42,12 +42,12 @@ public class AuctioneerController {
    * @throws EmptyAdBidsExceptions this is thrown when no bids are returned from the bidder services.
    * @throws AdBidRequestException this is thrown when requests to bidder services failed.
    */
-  @GetMapping(path = "/ad/{id}", produces = {MediaType.TEXT_PLAIN_VALUE})
-  ResponseEntity<AdBidResponse> getAd(@PathVariable String id, @RequestParam Map<String, String> attributes)
+  @GetMapping(path = "/ad/{id}", produces = MediaType.TEXT_PLAIN_VALUE)
+  ResponseEntity<String> getAd(@PathVariable String id, @RequestParam Map<String, String> attributes)
       throws EmptyAdBidsExceptions, AdBidRequestException {
     logger.debug("Received getAd request with id={} and attributes={}", id, attributes);
     final AdBidResponse adBidResponse = bidderService.bidForAnAd(id, attributes);
-    return new ResponseEntity<>(adBidResponse, HttpStatus.OK);
+    return new ResponseEntity<>(adBidResponse.toString(), HttpStatus.OK);
   }
 
 }

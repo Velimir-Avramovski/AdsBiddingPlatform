@@ -50,7 +50,7 @@ class AuctioneerControllerTest {
     when(bidderService.bidForAnAd(anyString(), any())).thenReturn(adBidResponseMock);
 
     // then
-    final ResponseEntity<AdBidResponse> adBidResponseReturned = auctioneerController.getAd(id, attributes);
+    final ResponseEntity<String> adBidResponseReturned = auctioneerController.getAd(id, attributes);
 
     // expected
     Assertions.assertNotNull(adBidResponseReturned);

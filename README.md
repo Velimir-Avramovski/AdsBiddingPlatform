@@ -12,6 +12,9 @@ Or Intellij run configuration: '.run\AdsBiddingPlatform_auctioneer [clean build 
 ### Testing:
 - Once bidders and auctioneer services are running, run 'yieldlab-rtb-task\run-test.sh' and validate results. Note that this script has been modified to accommodate the implementation.
 
+### IT Tests
+- Here we also have Integration Testing module under 'src/integrationTest'. And these can be run using Use 'src\integrationTest\java\ads\bidding\platform\auctioneer\TestRunner.java' runner.
+
 ### Architectural view:
 - Simple architectural overview of the system at: 'resources\ad-bidding-basic-architecture.drawio.png'
 

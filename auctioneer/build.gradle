@@ -7,27 +7,24 @@ plugins {
 group = 'ads.bidding.platform.auctioneer'
 version = '0.0.1-SNAPSHOT'
 
+// Set IT tests as source of the project!
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/integrationTest/java')
+        }
+    }
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
 
-    all {
-        /* only junit 5 should be used */
-        exclude group: 'junit', module: 'junit'
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
-}
-
-// Set IT tests as source of the project!
-sourceSets {
-    integrationTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir "$projectDir/src/integrationTest/java"
-        }
-        resources.srcDir "$projectDir/src/integrationTest/resources"
+    cucumberRuntime {
+        extendsFrom integrationTestImplementation
     }
 }
 
@@ -43,12 +40,50 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
 
-tasks.named('test') {
-    useJUnitPlatform()
+    // ToDo - These dependencies could be optimized!
+    integrationTestImplementation 'org.springframework.boot:spring-boot-starter-web'
+    integrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+    integrationTestImplementation 'org.springframework.boot:spring-boot-starter-security'
+    integrationTestImplementation 'io.cucumber:cucumber-java:7.0.0'
+    integrationTestImplementation 'io.cucumber:cucumber-junit:7.0.0'
+    integrationTestImplementation 'io.cucumber:cucumber-spring:7.0.0'
+    integrationTestImplementation "com.github.tomakehurst:wiremock-jre8:2.33.2"
 }
 
 bootRun {
     systemProperties System.properties
 }
+
+/*
+ToDo - Use src\integrationTest\java\ads\bidding\platform\auctioneer\TestRunner.java to run the IT test, alternatively we can use this task.
+task cucumberCli() {
+    dependsOn assemble, compileIntegrationTestJava, integrationTestClasses
+    doLast {
+        javaexec {
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.integrationTest.output
+            args = [
+                    '--plugin', 'pretty',
+                    '--plugin', 'html:target/cucumber-report.html',
+                    '--glue', 'ads.bidding.platform.auctioneer.steps',
+                    'src/integrationTest/resources']
+        }
+    }
+}
+*/
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+}
+
+check.dependsOn integrationTest
